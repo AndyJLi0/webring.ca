@@ -238,15 +238,32 @@ app.get('/', async (c) => {
           .map-tooltip { background: #e0ddd8; color: #1a1a1a; }
           .flag-white { background: #f5f5f5; }
         }
+        @media (max-width: 1023px) {
+          .landing-left { flex: 0 0 38%; padding: 2rem 1.5rem 1.5rem; }
+          .landing-right { padding: 1rem; }
+        }
         @media (max-width: 767px) {
-          .landing { flex-direction: column; }
+          .landing { flex-direction: column; height: auto; }
           .landing-left {
             flex: none;
             border-right: none;
             border-bottom: 1px solid #e0ddd8;
             padding: 1.5rem;
           }
-          .landing-right { padding: 1rem; }
+          .landing-right {
+            flex: none;
+            padding: 1rem;
+            gap: 0.75rem;
+          }
+          .flag-container {
+            aspect-ratio: 2 / 1;
+            flex: none;
+          }
+          .map-container {
+            aspect-ratio: 16 / 10;
+            flex: none;
+          }
+          .landing-headline { font-size: 1.6rem; }
         }
       </style>`)}
       <div class="landing">
