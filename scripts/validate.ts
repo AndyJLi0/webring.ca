@@ -148,6 +148,13 @@ for (const { current, base, changedFields } of editedMembers) {
         })
         if (res.ok) {
           write(`- PASS: ${safeUrl} responded with HTTP ${res.status}`)
+
+          const body = await res.text()
+          if (detectWidget(body, current.slug)) {
+            write('- PASS: Webring widget detected (marker + prev/next links)')
+          } else {
+            write('- INFO: Widget not detected on new URL. Make sure to install the widget — see https://github.com/stanleypangg/webring.ca#add-the-widget')
+          }
         } else {
           write(`- FAIL: ${safeUrl} returned HTTP ${res.status}. The site must return a 2xx status code.`)
           memberFailed = true

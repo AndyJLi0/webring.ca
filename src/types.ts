@@ -14,10 +14,11 @@ export interface Member {
 }
 
 export interface HealthStatus {
-  status: 'ok' | 'widget_missing' | 'unreachable'
+  status: 'ok' | 'widget_missing' | 'http_error' | 'unreachable'
   httpStatus?: number
   lastChecked: string
   consecutiveFails: number
+  frameable?: boolean
 }
 
 export type Bindings = {

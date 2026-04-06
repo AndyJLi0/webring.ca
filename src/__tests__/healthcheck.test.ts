@@ -76,6 +76,26 @@ describe('detectWidget', () => {
     const html = '<div data-webring="ca" data-member="bob"></div><a href="https://webring.ca/prev/bob">prev</a><a href="https://webring.ca/next/bob">next</a>'
     expect(detectWidget(html, 'alice')).toBe(false)
   })
+
+  it('rejects when slug is a prefix of the actual link slug', () => {
+    const html = '<div data-webring="ca"></div><a href="https://webring.ca/prev/alicexyz">prev</a><a href="https://webring.ca/next/alicexyz">next</a>'
+    expect(detectWidget(html, 'alice')).toBe(false)
+  })
+
+  it('accepts links with query params after the slug', () => {
+    const html = '<div data-webring="ca"></div><a href="https://webring.ca/prev/alice?ref=widget">prev</a><a href="https://webring.ca/next/alice?ref=widget">next</a>'
+    expect(detectWidget(html, 'alice')).toBe(true)
+  })
+
+  it('accepts links with hash after the slug', () => {
+    const html = '<div data-webring="ca"></div><a href="https://webring.ca/prev/alice#top">prev</a><a href="https://webring.ca/next/alice#top">next</a>'
+    expect(detectWidget(html, 'alice')).toBe(true)
+  })
+
+  it('accepts links with trailing slash after the slug', () => {
+    const html = '<div data-webring="ca"></div><a href="https://webring.ca/prev/alice/">prev</a><a href="https://webring.ca/next/alice/">next</a>'
+    expect(detectWidget(html, 'alice')).toBe(true)
+  })
 })
 
 describe('runHealthCheck', () => {
@@ -158,6 +178,21 @@ describe('runHealthCheck', () => {
     const call = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0]
     const headers = call[1]?.headers as Record<string, string>
     expect(headers['User-Agent']).toMatch(/^Mozilla\/5\.0/)
+  })
+
+  it('marks members as http_error when site returns non-2xx', async () => {
+    const kv = createMockKV({ members: JSON.stringify([alice]) })
+    mockFetch({
+      'https://alice.example.com': { ok: false, status: 500, body: '<html>Internal Server Error</html>' },
+    })
+
+    await runHealthCheck(kv)
+
+    const raw = await kv.get('health:alice')
+    const status: HealthStatus = JSON.parse(raw!)
+    expect(status.status).toBe('http_error')
+    expect(status.httpStatus).toBe(500)
+    expect(status.consecutiveFails).toBe(1)
   })
 
   it('marks members as unreachable on network error', async () => {

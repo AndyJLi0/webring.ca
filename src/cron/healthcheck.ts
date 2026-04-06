@@ -14,6 +14,25 @@ function randomUA(): string {
   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]
 }
 
+/** Check response headers for frame-blocking directives. */
+function isFrameable(headers: Headers): boolean {
+  const xfo = headers.get('x-frame-options')
+  if (xfo) {
+    const val = xfo.toUpperCase()
+    if (val === 'DENY' || val === 'SAMEORIGIN') return false
+  }
+  const csp = headers.get('content-security-policy')
+  if (csp) {
+    const match = csp.match(/frame-ancestors\s+([^;]+)/i)
+    if (match) {
+      const ancestors = match[1].trim().toLowerCase()
+      if (ancestors === "'none'" || ancestors === "'self'") return false
+      if (!ancestors.includes('*') && !ancestors.includes('webring.ca')) return false
+    }
+  }
+  return true
+}
+
 export async function runHealthCheck(kv: KVNamespace): Promise<void> {
   const members = await getMembers(kv)
 
@@ -29,15 +48,27 @@ export async function runHealthCheck(kv: KVNamespace): Promise<void> {
           signal: AbortSignal.timeout(5000),
           headers: { 'User-Agent': randomUA() },
         })
+
+        if (!res.ok) {
+          return {
+            status: 'http_error' as const,
+            httpStatus: res.status,
+            lastChecked: new Date().toISOString(),
+            consecutiveFails: (prev?.consecutiveFails ?? 0) + 1,
+          }
+        }
+
         const body = await res.text()
         const hasWidget = detectWidget(body, member.slug)
+        const frameable = isFrameable(res.headers)
 
-        if (res.ok && hasWidget) {
+        if (hasWidget) {
           return {
             status: 'ok' as const,
             httpStatus: res.status,
             lastChecked: new Date().toISOString(),
             consecutiveFails: 0,
+            frameable,
           }
         }
         return {
@@ -45,6 +76,7 @@ export async function runHealthCheck(kv: KVNamespace): Promise<void> {
           httpStatus: res.status,
           lastChecked: new Date().toISOString(),
           consecutiveFails: (prev?.consecutiveFails ?? 0) + 1,
+          frameable,
         }
       } catch {
         return {
