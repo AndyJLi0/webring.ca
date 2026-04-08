@@ -33,6 +33,7 @@
     var m = MEMBERS[idx];
     nameEl.textContent = m.name;
     try { urlEl.textContent = new URL(m.url).hostname.replace(/^www\./, ''); } catch(e) { urlEl.textContent = m.url; }
+    urlEl.href = m.url;
     cityEl.textContent = m.city;
     openEl.href = m.url;
   }
@@ -42,7 +43,7 @@
     if (currentIframe) { currentIframe.remove(); currentIframe = null; }
     fallbackEl.style.display = 'none';
     skeleton.style.display = 'flex';
-    overlay.classList.remove('is-dismissed');
+    overlay.classList.remove('is-dismissed', 'is-fading');
   }
 
   function showFallback(idx) {
@@ -113,11 +114,16 @@
     if (isActive) loadPreview(currentIdx);
   });
 
-  // Click overlay to dismiss and interact with iframe (only when settled)
-  overlay.addEventListener('click', function() {
-    if (isSettled && !overlay.classList.contains('is-dismissed')) {
-      overlay.classList.add('is-dismissed');
-    }
+  // Click overlay to dismiss and interact with iframe
+  var pendingDismiss = false;
+  overlay.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (overlay.classList.contains('is-dismissed')) return;
+
+    // Fade the hint immediately, snap the ring, dismiss after settle
+    overlay.classList.add('is-fading');
+    pendingDismiss = true;
+    ringEl.dispatchEvent(new CustomEvent('snapto', { detail: { index: EXPLORE_INDEX } }));
   });
 
   // Show/hide the hint based on settled state
@@ -125,12 +131,26 @@
     overlay.classList.toggle('is-ready', isSettled);
   }
 
+  function restoreOverlay() {
+    if (!overlay.classList.contains('is-dismissed')) return;
+    overlay.classList.remove('is-dismissed', 'is-fading');
+    if (currentIframe) {
+      currentIframe.classList.remove('is-interactive');
+      currentIframe.blur();
+    }
+    window.focus();
+  }
+
   // Escape restores the overlay when parent has focus
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && overlay.classList.contains('is-dismissed')) {
-      overlay.classList.remove('is-dismissed');
-      if (currentIframe) currentIframe.blur();
-      window.focus();
+    if (e.key === 'Escape') restoreOverlay();
+  });
+
+  // Click anywhere on the parent page (outside iframe) restores overlay
+  document.addEventListener('mousedown', function(e) {
+    if (!overlay.classList.contains('is-dismissed')) return;
+    if (!currentIframe || !currentIframe.contains(e.target)) {
+      restoreOverlay();
     }
   });
 
@@ -139,14 +159,14 @@
     if (!overlay.classList.contains('is-dismissed')) return;
     window.addEventListener('focus', function onFocus() {
       window.removeEventListener('focus', onFocus);
-      overlay.classList.remove('is-dismissed');
+      restoreOverlay();
     });
   });
 
-  // When user scrolls over the dismissed overlay, un-dismiss it so ring handles scroll
+  // When user scrolls over the dismissed overlay, restore it so ring handles scroll
   overlay.addEventListener('wheel', function() {
     if (overlay.classList.contains('is-dismissed')) {
-      overlay.classList.remove('is-dismissed');
+      restoreOverlay();
       isSettled = false;
     }
   });
@@ -171,7 +191,7 @@
   // Re-enable overlay when scrolling starts (prevent iframe from capturing scroll)
   ringEl.addEventListener('panelunsettle', function() {
     isSettled = false;
-    overlay.classList.remove('is-dismissed');
+    restoreOverlay();
     updateOverlayState();
   });
 
@@ -180,6 +200,11 @@
     if (e.detail.index === EXPLORE_INDEX && isActive) {
       isSettled = true;
       updateOverlayState();
+      if (pendingDismiss) {
+        pendingDismiss = false;
+        overlay.classList.add('is-dismissed');
+        if (currentIframe) currentIframe.classList.add('is-interactive');
+      }
     }
   });
 

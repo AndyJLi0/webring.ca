@@ -17,7 +17,6 @@ export function DirectoryContent({ active }: { active: Member[] }) {
 
       {/* Left: member directory */}
       <div class="directory-list-wrap">
-        <h2 class="directory-title">Members</h2>
         <div class="directory-list">
           <div class="directory-header">
             <span class="directory-header-name">Name</span>

@@ -68,6 +68,7 @@ body {
   justify-content: center;
   background: var(--bg);
   backface-visibility: hidden;
+  contain: layout style paint;
 }
 
 .panel--clone { display: none; }
@@ -351,16 +352,6 @@ body {
   overflow: hidden;
 }
 
-.directory-title {
-  font-size: 0.75rem;
-  font-family: 'Space Mono', monospace;
-  font-weight: 400;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  flex-shrink: 0;
-}
-
 .directory-list {
   display: flex;
   flex-direction: column;
@@ -377,11 +368,11 @@ body {
   padding: 0 0 0.4rem;
   border-bottom: 1px solid var(--border-strong);
   font-family: 'Space Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg-muted);
+  color: var(--fg);
 }
 
 .directory-header-name { flex: 1; }
@@ -431,7 +422,9 @@ body {
 }
 
 .directory-row-city {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--fg-muted);
   width: 5.5rem;
   text-align: right;
@@ -647,7 +640,7 @@ body {
 
 .preview-iframe-wrap {
   position: absolute;
-  inset: 0;
+  inset: 0 0 calc(28px + 1.2rem) 0;
   z-index: 1;
 }
 
@@ -657,6 +650,11 @@ body {
   border: none;
   opacity: 0;
   transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.preview-iframe-wrap iframe.is-interactive {
+  pointer-events: auto;
 }
 
 .preview-iframe-wrap iframe.is-loaded {
@@ -675,8 +673,10 @@ body {
   cursor: default;
 }
 
+.preview-overlay.is-fading .preview-overlay-hint,
 .preview-overlay.is-dismissed .preview-overlay-hint {
-  display: none;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .preview-overlay-hint {
@@ -700,11 +700,7 @@ body {
   pointer-events: none;
 }
 
-.preview-overlay:not(.is-ready) {
-  pointer-events: none;
-}
-
-.preview-overlay.is-ready:hover .preview-overlay-hint {
+.preview-overlay:hover:not(.is-fading):not(.is-dismissed) .preview-overlay-hint {
   opacity: 1;
 }
 
@@ -863,17 +859,29 @@ body {
 }
 
 .preview-member-url {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--fg-muted);
+  text-decoration: none;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 0 6px var(--bg), 0 0 12px var(--bg);
 }
 
+.preview-member-url:hover {
+  text-decoration: underline;
+}
+
+.preview-member-url:visited {
+  color: var(--fg-muted);
+}
+
 .preview-member-city {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   color: var(--fg-muted);
   white-space: nowrap;
   flex-shrink: 0;

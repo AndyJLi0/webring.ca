@@ -34,10 +34,11 @@ export function SitePreviewContent() {
         <div class="preview-info">
           <span class="preview-member-name" id="preview-name"></span>
           <span class="preview-member-sep">{raw('&middot;')}</span>
-          <span class="preview-member-url" id="preview-url"></span>
+          <a class="preview-member-url" id="preview-url" href="javascript:void(0)" target="_blank" rel="noopener noreferrer"></a>
+          <span class="preview-member-sep">{raw('&middot;')}</span>
+          <span class="preview-member-city" id="preview-city"></span>
         </div>
         <button type="button" class="preview-nav preview-nav-next" id="preview-next" aria-label="Next member">{raw('&#8594;')}</button>
-        <span class="preview-member-city" id="preview-city"></span>
         <a class="preview-open" id="preview-open" href="javascript:void(0)" target="_blank" rel="noopener noreferrer" aria-label="Open site in new tab">{raw('<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8.667V12.667A1.333 1.333 0 0 1 10.667 14H3.333A1.333 1.333 0 0 1 2 12.667V5.333A1.333 1.333 0 0 1 3.333 4H7.333"/><path d="M10 2H14V6"/><path d="M6.667 9.333L14 2"/></svg>')}</a>
       </div>
     </div>
