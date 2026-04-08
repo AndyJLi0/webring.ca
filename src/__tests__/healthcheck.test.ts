@@ -43,9 +43,9 @@ describe('detectWidget', () => {
     expect(detectWidget(html)).toBe(true)
   })
 
-  it('rejects marker hidden in HTML comment', () => {
+  it('accepts prev/next links even when marker is only in a comment', () => {
     const html = '<!-- <div data-webring="ca"></div> --><a href="https://webring.ca/prev/alice">prev</a><a href="https://webring.ca/next/alice">next</a>'
-    expect(detectWidget(html)).toBe(false)
+    expect(detectWidget(html)).toBe(true)
   })
 
   it('rejects marker alone without embed script or prev/next links', () => {
@@ -84,9 +84,9 @@ describe('detectWidget', () => {
     expect(detectWidget(html, 'alice')).toBe(true)
   })
 
-  it('rejects prev/next links without marker', () => {
+  it('accepts prev/next links without marker', () => {
     const html = '<a href="https://webring.ca/prev/alice">prev</a><a href="https://webring.ca/next/alice">next</a>'
-    expect(detectWidget(html)).toBe(false)
+    expect(detectWidget(html)).toBe(true)
   })
 
   it('rejects when only prev link is present', () => {
@@ -255,7 +255,7 @@ describe('runHealthCheck', () => {
     expect(status.consecutiveFails).toBe(1)
   })
 
-  it('marks as widget_missing when marker is in a comment', async () => {
+  it('marks as ok when marker is in a comment but prev/next links are present', async () => {
     const kv = createMockKV({ members: JSON.stringify([alice]) })
     mockFetch({
       'https://alice.example.com': { ok: true, status: 200, body: '<!-- <div data-webring="ca"></div> --><a href="https://webring.ca/prev/alice">prev</a><a href="https://webring.ca/next/alice">next</a>' },
@@ -265,7 +265,7 @@ describe('runHealthCheck', () => {
 
     const raw = await kv.get('health:alice')
     const status: HealthStatus = JSON.parse(raw!)
-    expect(status.status).toBe('widget_missing')
+    expect(status.status).toBe('ok')
   })
 
   it('marks as widget_missing when marker present but no links', async () => {

@@ -44,8 +44,8 @@ export function detectWidgetInBundle(js: string, slug?: string): boolean {
     return lower.includes('data-member') && new RegExp(`["']${slugLower}["']`).test(lower)
   }
 
-  // Secondary: data-webring marker + both prev and next webring.ca links
-  if (lower.includes('data-webring') && lower.includes('webring.ca/prev/') && lower.includes('webring.ca/next/')) {
+  // Secondary: both prev and next webring.ca links (data-webring marker optional)
+  if (lower.includes('webring.ca/prev/') && lower.includes('webring.ca/next/')) {
     if (!slug) return true
     const slugPattern = escapeRegex(slug.toLowerCase())
     const hasPrev = new RegExp(`webring\\.ca/prev/${slugPattern}`).test(lower)
@@ -59,22 +59,20 @@ export function detectWidgetInBundle(js: string, slug?: string): boolean {
 /**
  * Detect whether an HTML page contains a valid webring widget.
  *
- * Requires all of:
- * 1. A marker: `data-webring="ca"` attribute or `webring.ca/embed.js` script
- * 2. A prev link: `href` pointing to `webring.ca/prev/`
- * 3. A next link: `href` pointing to `webring.ca/next/`
+ * Two detection paths:
+ * 1. **embed.js**: `webring.ca/embed.js` script + matching `data-member` slug
+ * 2. **Manual widget**: both a prev link (`webring.ca/prev/{slug}`) and a next
+ *    link (`webring.ca/next/{slug}`). No marker attribute required.
  *
- * When `slug` is provided, prev/next links must match that member exactly.
- * HTML comments are stripped before detection so hidden markers don't pass.
+ * When `slug` is provided, links must match that member exactly.
+ * HTML comments are stripped before detection so hidden scripts don't pass.
  *
  * NOTE: Detection runs against raw HTML returned by fetch(). Sites that render
  * the widget entirely via client-side JavaScript (SPAs with no SSR) will not
- * pass — the marker and links must be present in the initial HTML response.
+ * pass -- use `detectWidgetInBundle()` as a fallback for those.
  */
 export function detectWidget(html: string, slug?: string): boolean {
   const stripped = html.toLowerCase().replace(/<!--[\s\S]*?-->/g, '')
-  const hasMarker = stripped.includes('data-webring="ca"') || stripped.includes('webring.ca/embed.js')
-  if (!hasMarker) return false
 
   // embed.js path: script tag + matching data-member is sufficient
   // because embed.js renders prev/next links client-side in a Shadow DOM
@@ -84,7 +82,8 @@ export function detectWidget(html: string, slug?: string): boolean {
     return new RegExp(`data-member=["']${escapeRegex(slug.toLowerCase())}["']`).test(stripped)
   }
 
-  // Manual widget path: requires prev + next links in raw HTML
+  // Manual widget path: prev + next links are sufficient (the slug match
+  // already prevents false positives, so the data-webring marker is optional)
   const slugPattern = slug ? escapeRegex(slug.toLowerCase()) : '[a-z0-9-]+'
   const hasPrev = new RegExp(`href=["'][^"']*webring\\.ca/prev/${slugPattern}(?:[?#/][^"']*)?["']`).test(stripped)
   const hasNext = new RegExp(`href=["'][^"']*webring\\.ca/next/${slugPattern}(?:[?#/][^"']*)?["']`).test(stripped)
