@@ -17,6 +17,7 @@
   var openEl = document.getElementById('preview-open');
   var prevBtn = document.getElementById('preview-prev');
   var nextBtn = document.getElementById('preview-next');
+  var randomBtn = document.getElementById('preview-random');
   var overlay = document.getElementById('preview-overlay');
 
   // On touch devices, show "Tap to interact" instead of "Click to interact"
@@ -124,6 +125,13 @@
 
   nextBtn.addEventListener('click', function() {
     currentIdx = (currentIdx + 1) % MEMBERS.length;
+    if (isActive) loadPreview(currentIdx);
+  });
+
+  randomBtn.addEventListener('click', function() {
+    var newIdx;
+    do { newIdx = Math.floor(Math.random() * MEMBERS.length); } while (newIdx === currentIdx && MEMBERS.length > 1);
+    currentIdx = newIdx;
     if (isActive) loadPreview(currentIdx);
   });
 
