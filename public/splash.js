@@ -197,6 +197,7 @@
     }, { passive: false });
 
     function onTouchEnd() {
+      if (ring.classList.contains('is-iframe-active')) return;
       isDragging = false;
       var wasHorizontalScroll = isHorizontalScroll;
       isHorizontalScroll = false;
