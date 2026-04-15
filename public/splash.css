@@ -1118,44 +1118,9 @@ body.has-ring-fullscreen {
   }
 }
 
-/* Exit pill — persistent top bar when iframe is interactive */
+/* Exit pill — hidden on desktop, corner pill on mobile */
 .preview-exit-pill {
-  display: flex;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 6;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  background: color-mix(in srgb, var(--bg) 80%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 10%, transparent);
-  font-family: 'Space Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--fg-muted);
-  cursor: pointer;
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s ease, color 0.2s;
-}
-
-.preview-exit-pill.is-visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.preview-exit-pill:hover,
-.preview-exit-pill:focus-visible {
-  color: var(--fg);
+  display: none;
 }
 
 .preview-skeleton {
@@ -1386,6 +1351,34 @@ body.has-ring-fullscreen {
   }
   .preview-member-city {
     display: none;
+  }
+  .preview-exit-pill {
+    display: flex;
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 6;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.55rem;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid color-mix(in srgb, var(--fg) 12%, transparent);
+    border-radius: 999px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, color 0.2s;
+  }
+  .preview-exit-pill.is-visible {
+    opacity: 1;
+    pointer-events: auto;
   }
 }
 
